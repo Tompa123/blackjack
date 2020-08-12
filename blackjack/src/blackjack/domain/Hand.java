@@ -24,7 +24,7 @@ public class Hand {
 			softValue += SOFT_ACE_VALUE - Rank.Ace.Value(); // Basically replaces an ace with its equivalent soft value.
 		}
 		
-		return softValue > NATURAL_BLACKJACK ? HardValue() : softValue;
+		return softValue > BLACK_JACK_LIMIT ? HardValue() : softValue;
 	}
 	
 	public void AddCard(Card card) {
@@ -54,6 +54,14 @@ public class Hand {
 		return new PairOfHands(firstHand, secondHand);
 	}
 	
+	public boolean IsBusted() {
+		return HardValue() > BLACK_JACK_LIMIT;
+	}
+	
+	public boolean IsBlackJack() {
+		return SoftValue() == BLACK_JACK_LIMIT && cards.size() == 2;
+	}
+	
 	private boolean ContainsAnAce() {
 		for (Card card : cards) {
 			if (card.Rank() == Rank.Ace) {
@@ -65,5 +73,5 @@ public class Hand {
 	}
 	
 	public static final int SOFT_ACE_VALUE = 11;
-	public static final int NATURAL_BLACKJACK = 21;
+	public static final int BLACK_JACK_LIMIT = 21;
 }

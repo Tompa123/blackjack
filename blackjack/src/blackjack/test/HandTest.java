@@ -134,4 +134,46 @@ class HandTest {
 		
 		assertThrows(RuntimeException.class, () -> hand.Split());
 	}
+	
+	@Test
+	void AHandHigherThan21IsBusted() {
+		hand.AddCard(new Card(Rank.Ten, Suit.Hearts));
+		hand.AddCard(new Card(Rank.Ten, Suit.Diamonds));
+		hand.AddCard(new Card(Rank.Ten, Suit.Diamonds));
+		
+		assertTrue(hand.IsBusted());
+	}
+	
+	@Test
+	void AHandLesserThan21IsNotBusted() {
+		hand.AddCard(new Card(Rank.Ten, Suit.Hearts));
+		assertFalse(hand.IsBusted());
+	}
+	
+	@Test 
+	void AHandEqualTo21IsNotBusted() {
+		hand.AddCard(new Card(Rank.Ten, Suit.Hearts));
+		hand.AddCard(new Card(Rank.Ten, Suit.Diamonds));
+		hand.AddCard(new Card(Rank.Ace, Suit.Clubs));
+		
+		assertFalse(hand.IsBusted());
+	}
+	
+	@Test
+	void APairOfTwoCardsMaking21IsABlackJack() {
+		hand.AddCard(new Card(Rank.Ten, Suit.Clubs));
+		hand.AddCard(new Card(Rank.Ace, Suit.Diamonds));
+		
+		assertTrue(hand.IsBlackJack());
+	}
+	
+	@Test
+	void MoreCardsThanTwoCannotMakeABlackJack() {
+		// A hand is only considered a black jack if the hand makes 21 with exactly 2 cards.
+		hand.AddCard(new Card(Rank.Ten, Suit.Clubs));
+		hand.AddCard(new Card(Rank.Ten, Suit.Clubs));
+		hand.AddCard(new Card(Rank.Ace, Suit.Hearts));
+		
+		assertFalse(hand.IsBlackJack());
+	}
 }
