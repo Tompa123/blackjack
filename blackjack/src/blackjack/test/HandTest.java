@@ -52,19 +52,6 @@ class HandTest {
 	}
 	
 	@Test
-	void ASoftHandWithAValueAbove21ShouldBeEqualToAHardHand() {
-		// 3 cards with soft value 1 + 10 + 11 = 22 (bust, i.e. > 21)
-		// [..] with hard value 1 + 10 + 1 = 12
-		hand.AddCard(new Card(Rank.Ace, Suit.Clubs));
-		hand.AddCard(new Card(Rank.King, Suit.Diamonds));
-		hand.AddCard(new Card(Rank.Ace, Suit.Hearts));
-		
-		// Soft value is irrelevant if it's beyond 21. In those cases, we should
-		// consider it to be the same as the hard value.
-		assertEquals(hand.HardValue(), hand.SoftValue());
-	}
-	
-	@Test
 	void CalculateSoftValueOfAHandWithOnlyAces() {
 		hand.AddCard(new Card(Rank.Ace, Suit.Clubs));
 		hand.AddCard(new Card(Rank.Ace, Suit.Hearts));

@@ -24,7 +24,7 @@ public class Hand {
 			softValue += SOFT_ACE_VALUE - Rank.Ace.Value(); // Basically replaces an ace with its equivalent soft value.
 		}
 		
-		return softValue > BLACK_JACK_LIMIT ? HardValue() : softValue;
+		return softValue;
 	}
 	
 	public void AddCard(Card card) {
