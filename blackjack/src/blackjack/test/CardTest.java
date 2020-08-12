@@ -51,4 +51,6 @@ class CardTest {
 	void ShouldAlwaysHaveAValidRank() {
 		assertThrows(RuntimeException.class, () -> new Card(null, Suit.Diamonds));
 	}
+	
+
 }

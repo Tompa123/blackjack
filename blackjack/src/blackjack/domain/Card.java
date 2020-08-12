@@ -33,4 +33,12 @@ public class Card {
 		return false;
 	}
 	
+	public int GetValue() {
+		return this.rank.Value();
+	}
+	
+	public Rank Rank() {
+		return this.rank;
+	}
+	
 }
