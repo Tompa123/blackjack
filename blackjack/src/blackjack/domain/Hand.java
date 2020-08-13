@@ -3,7 +3,7 @@ package blackjack.domain;
 import java.util.LinkedList;
 
 public class Hand {
-	private LinkedList<Card> cards;
+	protected LinkedList<Card> cards;
 	
 	public Hand() {
 		cards = new LinkedList<Card>();
@@ -29,29 +29,6 @@ public class Hand {
 	
 	public void AddCard(Card card) {
 		cards.add(card);
-	}
-	
-	public boolean CanBeSplit() {
-		if (cards.size() != 2) {
-			return false;
-		}
-		
-		return cards.getFirst().Rank() == cards.getLast().Rank();
-	}
-	
-	public PairOfHands Split() {
-		if (cards.size() != 2) {
-			throw new RuntimeException("A hand must have exactly 2 cards in order to be split correctly." +
-									   "Use the method 'CanBeSplit()' before splitting a hand.");
-		}
-		
-		Hand firstHand = new Hand();
-		Hand secondHand = new Hand();
-		
-		firstHand.AddCard(cards.getFirst());
-		secondHand.AddCard(cards.getLast());
-		
-		return new PairOfHands(firstHand, secondHand);
 	}
 	
 	public boolean IsBusted() {

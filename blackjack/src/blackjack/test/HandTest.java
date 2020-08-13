@@ -60,66 +60,15 @@ class HandTest {
 	}
 	
 	@Test
+	void SoftValueShouldEqualHardValueWhenThereIsNoAce() {
+		hand.AddCard(new Card(Rank.Ten, Suit.Clubs));
+		hand.AddCard(new Card(Rank.Ten, Suit.Diamonds));
+		assertEquals(hand.HardValue(), hand.SoftValue());
+	}
+	
+	@Test
 	void AnEmptyHandShouldHaveAHardValueOfZero() {
 		assertEquals(0, hand.HardValue());
-	}
-
-	@Test
-	void AHandWith2IdenticallyValuedCardsCanBeSplit() {
-		Hand splittable = new Hand();
-		Hand notSplittable = new Hand();
-
-		splittable.AddCard(new Card(Rank.Ten, Suit.Clubs));
-		splittable.AddCard(new Card(Rank.Ten, Suit.Diamonds));
-		notSplittable.AddCard(new Card(Rank.Five, Suit.Hearts));
-		notSplittable.AddCard(new Card(Rank.Six, Suit.Clubs));
-		
-		assertTrue(splittable.CanBeSplit());
-		assertFalse(notSplittable.CanBeSplit());
-	}
-	
-	@Test
-	void AHandWithMoreThan2CardsCannotBeSplit() {
-		hand.AddCard(new Card(Rank.Ace, Suit.Diamonds));
-		hand.AddCard(new Card(Rank.Ace, Suit.Diamonds));
-		hand.AddCard(new Card(Rank.Ace, Suit.Diamonds));
-		
-		assertFalse(hand.CanBeSplit());
-	}
-	
-	@Test
-	void AHandWithLessThan2CardsCannotBeSplit() {
-		hand.AddCard(new Card(Rank.Ace, Suit.Diamonds));
-		assertFalse(hand.CanBeSplit());
-	}
-	
-	@Test
-	void SplitAHandOfTwoCards() {
-		Card firstCard = new Card(Rank.Five, Suit.Clubs);
-		Card secondCard = new Card(Rank.Five, Suit.Diamonds);
-		hand.AddCard(firstCard);
-		hand.AddCard(secondCard);
-		
-		PairOfHands split = hand.Split();
-		assertEquals(Rank.Five.Value(), split.firstHand.HardValue());
-		assertEquals(Rank.Five.Value(), split.secondHand.HardValue());
-		assertEquals(Rank.Five.Value() + Rank.Five.Value(), hand.HardValue());
-	}
-	
-	@Test
-	void ShouldNotAllowSplittingAHandWithLessThanTwoCards() {
-		hand.AddCard(new Card(Rank.Ace, Suit.Hearts));
-		
-		assertThrows(RuntimeException.class, () -> hand.Split());
-	}
-	
-	@Test
-	void ShouldNotAllowSplittingAHandWithMoreThanTwoCards() {
-		hand.AddCard(new Card(Rank.Ace, Suit.Hearts));
-		hand.AddCard(new Card(Rank.Ace, Suit.Diamonds));
-		hand.AddCard(new Card(Rank.Ace, Suit.Clubs));
-		
-		assertThrows(RuntimeException.class, () -> hand.Split());
 	}
 	
 	@Test
