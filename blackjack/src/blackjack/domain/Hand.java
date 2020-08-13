@@ -9,6 +9,10 @@ public class Hand {
 		cards = new LinkedList<Card>();
 	}
 	
+	public Hand(Hand otherHand) {
+		cards = new LinkedList<Card>(otherHand.cards);
+	}
+	
 	public int HardValue() {
 		int hardValue = 0;
 		for (Card card : cards) {
@@ -37,6 +41,10 @@ public class Hand {
 	
 	public boolean IsBlackJack() {
 		return SoftValue() == BLACK_JACK_LIMIT && cards.size() == 2;
+	}
+	
+	public Card GetCard(int index) {
+		return new Card(cards.get(index));
 	}
 	
 	private boolean ContainsAnAce() {

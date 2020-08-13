@@ -10,6 +10,12 @@ public class PlayerHand extends Hand {
 		this.doubleDown = false;
 	}
 	
+	public PlayerHand(PlayerHand otherHand) {
+		super(otherHand);
+		bet = otherHand.bet;
+		doubleDown = otherHand.doubleDown;
+	}
+	
 	public int GetBet() {
 		return bet;
 	}

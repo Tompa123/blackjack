@@ -14,6 +14,12 @@ public class Card {
 		this.suit = suit;
 	}
 	
+	public Card(Card otherCard) {
+		Objects.requireNonNull(otherCard, "Cannot copy a null card.");
+		this.rank = otherCard.rank;
+		this.suit = otherCard.suit;
+	}
+	
 	@Override
 	public boolean equals(Object other) {
 		if (this == other) {
