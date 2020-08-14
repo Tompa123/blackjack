@@ -13,6 +13,10 @@ public class Hand {
 		cards = new LinkedList<Card>(otherHand.cards);
 	}
 	
+	public int GetNumberOfCards() {
+		return cards.size();
+	}
+	
 	public int HardValue() {
 		int hardValue = 0;
 		for (Card card : cards) {

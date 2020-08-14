@@ -65,4 +65,29 @@ class PlayerTest {
 		assertThrows(RuntimeException.class, () -> player.GetHand(0));
 		assertThrows(RuntimeException.class, () -> player.GetHand(-1));
 	}
+	
+	@Test
+	void CompareEqualityBetweenTwoPlayers() {
+		Player firstPlayer = new Player("John Doe", 100);
+		Player secondPlayer = new Player("John Doe", 321);
+		
+		assertEquals(firstPlayer, secondPlayer);
+	}
+	
+	@SuppressWarnings("unlikely-arg-type")
+	@Test
+	void CompareEqualityBetweenAPlayerAnIncompatibleType() {
+		String someString = new String("Some string");
+		assertFalse(player.equals(someString));
+	}
+	
+	@Test
+	void CompareEqualityBetweenPlayerAndNull() {
+		assertFalse(player.equals(null));
+	}
+	
+	@Test
+	void ThrowAnExceptionWhenAttemptingToCreatePlayerWithNullName() {
+		assertThrows(RuntimeException.class, () -> new Player(null, 100));
+	}
 }

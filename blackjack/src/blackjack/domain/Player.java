@@ -1,6 +1,7 @@
 package blackjack.domain;
 
 import java.util.LinkedList;
+import java.util.Objects;
 
 public class Player {
 	private LinkedList<PlayerHand> hands;
@@ -8,9 +9,27 @@ public class Player {
 	private String name;
 	
 	public Player(String name, int balance) {
+		Objects.requireNonNull(name, "A player must be given a name upon construction.");
 		hands = new LinkedList<PlayerHand>();
 		this.name = name;
 		this.balance = balance;
+	}
+	
+	public Player(Player otherPlayer) {
+		this(otherPlayer.name, otherPlayer.balance);
+		for (PlayerHand hand : otherPlayer.hands) {
+			hands.add(new PlayerHand(hand));
+		}
+	}
+	
+	@Override
+	public boolean equals(Object otherPlayer) {
+		if (otherPlayer == null || !(otherPlayer instanceof Player)) {
+			return false;
+		}
+		
+		Player other = (Player)otherPlayer;
+		return this.name == other.name;
 	}
 	
 	public int GetNumberOfHands() {
