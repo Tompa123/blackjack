@@ -192,7 +192,7 @@ public class Game {
 			}
 		} else {
 			currentHand++;
-		}		
+		}
 	}
 	
 	private int GetNextOccupiedSlot() {

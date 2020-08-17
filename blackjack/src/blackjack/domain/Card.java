@@ -31,7 +31,6 @@ public class Card {
 		}
 		
 		Card otherCard = (Card)other;
-		
 		if (this.rank.equals(otherCard.rank) && this.suit.equals(otherCard.suit)) {
 			return true;
 		}
@@ -45,6 +44,10 @@ public class Card {
 	
 	public Rank Rank() {
 		return this.rank;
+	}
+	
+	public Suit Suit() {
+		return this.suit;
 	}
 	
 }
