@@ -35,7 +35,7 @@ public class Game {
 		}
 		
 		dealer.AddCard(deck.PickRandomCard());
-		SetCurrentTurn(GetFirstPlayer());
+		SetCurrentTurn(GetFirstOccupiedSlot());
 		DealStarterHands();
 	}
 	
@@ -80,17 +80,13 @@ public class Game {
 	}
 	
 	public void Hit() {
-		Card card = deck.PickRandomCard();
-		Hit(card);
-	}
-	
-	public void Hit(Card card) {
 		if (!CurrentlyRunning()) {
 			throw new GameNotStartedException("Could not move onto the next hand; no game is running");
 		}
 		
-		players[currentTurn].AddCardToHand(card, currentHand);
-		PlayerHand hand = players[currentTurn].GetHand(currentHand);
+		Player currentPlayer = players[currentTurn];
+		currentPlayer.AddCardToHand(deck.PickRandomCard(), currentHand);
+		PlayerHand hand = currentPlayer.GetHand(currentHand);
 		if (hand.IsBusted()) {
 			MoveToNextHand();
 		}
@@ -174,7 +170,7 @@ public class Game {
 		return NO_VACANT_SLOTS;
 	}
 	
-	private int GetFirstPlayer() {
+	private int GetFirstOccupiedSlot() {
 		for (int index = 0; index < players.length; ++index) {
 			if (players[index] != null) {
 				return index;
@@ -184,7 +180,7 @@ public class Game {
 		return NO_PLAYER_FOUND;
 	}
 
-	private void MoveToNextHand() {		
+	private void MoveToNextHand() {
 		boolean anyHandsLeft = currentHand + 1 < players[currentTurn].GetNumberOfHands();
 		if (!anyHandsLeft) {
 			int nextSlot = GetNextOccupiedSlot();
