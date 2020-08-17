@@ -112,4 +112,38 @@ class HandTest {
 		
 		assertFalse(hand.IsBlackJack());
 	}
+	
+	@Test
+	void ReturnTheSoftValueAsAHandValueIfItIsNotGreaterThan21() {
+		hand.AddCard(new Card(Rank.Ten, Suit.Hearts));
+		hand.AddCard(new Card(Rank.Ace, Suit.Clubs));
+		
+		assertEquals(Hand.BLACK_JACK_LIMIT, hand.GetValue());
+	}
+	
+	@Test
+	void ReturnTheHardValueAsAHandValueIfTheSoftValueIsGreaterThan21() {
+		hand.AddCard(new Card(Rank.Ten, Suit.Hearts));
+		hand.AddCard(new Card(Rank.Ace, Suit.Clubs));
+		hand.AddCard(new Card(Rank.Five, Suit.Clubs));
+		
+		assertEquals(16, hand.GetValue());
+	}
+	
+	@Test
+	void ReturnTheDistanceBetweenTheHandValueAnd21IfItIsNotGreaterThan21() {
+		hand.AddCard(new Card(Rank.Ten, Suit.Hearts));
+		hand.AddCard(new Card(Rank.Seven, Suit.Diamonds));
+		
+		assertEquals(4, hand.DistanceToBlackJack());
+	}
+	
+	@Test
+	void ReturnTheDistanceBetweenTheHandValueAnd21IfItIsGreaterThan21() {
+		hand.AddCard(new Card(Rank.Ten, Suit.Hearts));
+		hand.AddCard(new Card(Rank.Ten, Suit.Diamonds));
+		hand.AddCard(new Card(Rank.Seven, Suit.Clubs));
+		
+		assertEquals(6, hand.DistanceToBlackJack());
+	}
 }

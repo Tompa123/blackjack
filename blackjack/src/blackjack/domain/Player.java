@@ -3,9 +3,12 @@ package blackjack.domain;
 import java.util.LinkedList;
 import java.util.Objects;
 
+import blackjack.exceptions.InsufficientBalanceException;
+
 public class Player {
 	private LinkedList<PlayerHand> hands;
 	private int balance;
+	private int initialBet;
 	private String name;
 	
 	public Player(String name, int balance) {
@@ -32,17 +35,50 @@ public class Player {
 		return this.name == other.name;
 	}
 	
+	public void PlaceInitialBet(int bet) {
+		if (bet > balance) {
+			throw new InsufficientBalanceException("Attempted to place a bet larger than what the player can afford. " +
+													"Check balance with the method 'GetBalance()' before placing bets.");
+		} else if (bet < 0) {
+			String description = new String("Negative bets (%d) are not legal.");
+			throw new IllegalArgumentException(String.format(description, bet));
+		}
+		
+		initialBet = bet;
+	}
+	
+	public int GetInitialBet() {
+		return initialBet;
+	}
+	
 	public int GetNumberOfHands() {
 		return hands.size();
 	}
 	
+	public int GetBalance() {
+		return balance;
+	}
+	
+	public void WithdrawBet() {
+		balance -= initialBet;
+		initialBet = 0;
+	}
+	
 	public PlayerHand GetHand(int index) {
 		if (!IsValidHandIndex(index)) {
-			throw new RuntimeException("Attempted to get a hand (at index %s) out of bounds. Use the method 'GetNumberOfHands()' "
-									   + "before accessing any hands of a player.");
+			throw new IllegalArgumentException("Attempted to get a hand (at index %s) out of bounds. Use the method 'GetNumberOfHands()' "
+									   		 + "before accessing any hands of a player.");
 		}
 		
 		return new PlayerHand(hands.get(index));
+	}
+	
+	public boolean IsBusted(int hand) {
+		return hands.get(hand).IsBusted();
+	}
+	
+	public void AddCardToHand(Card card, int hand) {
+		hands.get(hand).AddCard(card);
 	}
 	
 	public void AddHand(PlayerHand hand) {

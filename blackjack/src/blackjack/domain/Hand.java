@@ -35,6 +35,10 @@ public class Hand {
 		return softValue;
 	}
 	
+	public int GetValue() {
+		return SoftValue() <= BLACK_JACK_LIMIT ? SoftValue() : HardValue();
+	}
+	
 	public void AddCard(Card card) {
 		cards.add(card);
 	}
@@ -47,10 +51,14 @@ public class Hand {
 		return SoftValue() == BLACK_JACK_LIMIT && cards.size() == 2;
 	}
 	
+	public int DistanceToBlackJack() {
+		return Math.abs(BLACK_JACK_LIMIT - GetValue());
+	}
+	
 	public Card GetCard(int index) {
 		return new Card(cards.get(index));
 	}
-	
+
 	private boolean ContainsAnAce() {
 		for (Card card : cards) {
 			if (card.Rank() == Rank.Ace) {

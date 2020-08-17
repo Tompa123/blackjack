@@ -7,32 +7,109 @@ import blackjack.exceptions.*;
 public class Game {
 	private Player[] players;
 	private int currentTurn;
+	private int currentHand;
 	private Deck deck;
 	private Hand dealer;
-	private static int NO_VACANT_SLOTS = -1;
-	private static int NO_PLAYER_FOUND = -1;
-	public static int MAX_SLOTS = 5;
+	private static final int DEALER_DRAW_LIMIT = 17;
+	private static final int NO_VACANT_SLOTS = -1;
+	private static final int NO_PLAYER_FOUND = -1;
+	private static final int DEALER_SLOT = -1;
+	public static final int MAX_SLOTS = 5;
 	
 	public Game() {
 		players = new Player[MAX_SLOTS];
-		currentTurn = NO_PLAYER_FOUND;
+		currentTurn = DEALER_SLOT;
 		deck = new Deck();
 		dealer = new Hand();
 	}
 	
-	public void Start() {
+	public Game(Deck deck) {
+		this();
+		this.deck = deck;
+	}
+	
+	public void StartNewRound() {
 		if (!AtLeastOneActivePlayer()) {
 			throw new NoActivePlayersException("Attempted to start a game with no players in it." +
 												"Use the method 'AtLeastOneActivePlayer()' to make sure there are players before starting the game.");
 		}
 		
 		dealer.AddCard(deck.PickRandomCard());
-		currentTurn = GetFirstPlayer();
+		SetCurrentTurn(GetFirstPlayer());
 		DealStarterHands();
+	}
+	
+	public void SetCurrentTurn(int turn) {
+		currentTurn = turn;
+		currentHand = 0;
+	}
+	
+	public void SetDealerHand(Hand hand) {
+		dealer = new Hand(hand);
+	}
+	
+	public HandState GetHandState(int slot, int handIndex) {
+		if (!IsSlotInbounds(slot) || players[slot] == null) {
+			String description = "Attempted to get player state for non-existent player (%d).";
+			throw new PlayerDoesNotExistException(String.format(description, slot));
+		}
+		
+		Player player = players[slot];
+		PlayerHand hand = player.GetHand(handIndex);
+		
+		if (hand.IsBusted()) {
+			return HandState.Bust;
+		} else if (hand.DistanceToBlackJack() > dealer.DistanceToBlackJack()) {
+			return HandState.Loss;
+		} else if (hand.DistanceToBlackJack() < dealer.DistanceToBlackJack()) {
+			return HandState.Win;
+		} else {
+			return HandState.Push;
+		}
+	}
+	
+	public void GiveDealerCards() {
+		while (dealer.HardValue() < DEALER_DRAW_LIMIT 
+				&& (dealer.SoftValue() < DEALER_DRAW_LIMIT || dealer.SoftValue() > Hand.BLACK_JACK_LIMIT)) {
+			dealer.AddCard(deck.PickRandomCard());
+		}
 	}
 	
 	public Hand GetDealerHand() {
 		return new Hand(dealer);
+	}
+	
+	public void Hit() {
+		Card card = deck.PickRandomCard();
+		Hit(card);
+	}
+	
+	public void Hit(Card card) {
+		if (!CurrentlyRunning()) {
+			throw new GameNotStartedException("Could not move onto the next hand; no game is running");
+		}
+		
+		players[currentTurn].AddCardToHand(card, currentHand);
+		PlayerHand hand = players[currentTurn].GetHand(currentHand);
+		if (hand.IsBusted()) {
+			MoveToNextHand();
+		}
+	}
+	
+	public void Stand() {
+		if (!CurrentlyRunning()) {
+			throw new GameNotStartedException("Could not move onto the next hand; no game is running");
+		}
+		
+		MoveToNextHand();
+	}
+	
+	public Player GetCurrentPlayer() {
+		return new Player(players[currentTurn]);
+	}
+	
+	public int GetCurrentHand() {
+		return currentHand;
 	}
 	
 	public void AddPlayerToSlot(Player player, int slot) {
@@ -63,6 +140,10 @@ public class Game {
 	
 	public boolean IsFull() {
 		return GetFirstVacantSlot() == NO_VACANT_SLOTS;
+	}
+	
+	public boolean CurrentlyRunning() {
+		return currentTurn != DEALER_SLOT;
 	}
 	
 	public boolean IsSlotVacant(int slot) {
@@ -102,6 +183,31 @@ public class Game {
 		
 		return NO_PLAYER_FOUND;
 	}
+
+	private void MoveToNextHand() {		
+		boolean anyHandsLeft = currentHand + 1 < players[currentTurn].GetNumberOfHands();
+		if (!anyHandsLeft) {
+			int nextSlot = GetNextOccupiedSlot();
+			if (nextSlot != DEALER_SLOT) {
+				SetCurrentTurn(nextSlot);
+			} else {
+				GiveDealerCards();
+				SetCurrentTurn(DEALER_SLOT);
+			}
+		} else {
+			currentHand++;
+		}		
+	}
+	
+	private int GetNextOccupiedSlot() {
+		for (int slot = currentTurn + 1; slot < MAX_SLOTS; ++slot) {
+			if (players[slot] != null) {
+				return slot;
+			}
+		}
+		
+		return DEALER_SLOT;
+	}
 	
 	private void DealStarterHands() {
 		for (Player player : players) {
@@ -110,6 +216,7 @@ public class Game {
 				hand.AddCard(deck.PickRandomCard());
 				hand.AddCard(deck.PickRandomCard());
 				player.AddHand(hand);
+				player.WithdrawBet();
 			}
 		}		
 	}

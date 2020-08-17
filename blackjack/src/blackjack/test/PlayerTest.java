@@ -1,6 +1,7 @@
 package blackjack.test;
 
 import blackjack.domain.*;
+import blackjack.exceptions.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -61,9 +62,25 @@ class PlayerTest {
 	}
 	
 	@Test
+	void PlaceAnInitialBet() {
+		player.PlaceInitialBet(25);
+		assertEquals(25, player.GetInitialBet());
+	}
+	
+	@Test
+	void ShouldNotPlaceBetsThatAreHigherThanThePlayersBalance() {
+		assertThrows(InsufficientBalanceException.class, () -> player.PlaceInitialBet(101));
+	}
+	
+	@Test
+	void PlacingNegativeBetsAreNotAllowed() {
+		assertThrows(IllegalArgumentException.class, () -> player.PlaceInitialBet(-1));
+	}
+	
+	@Test
 	void ThrowAnExceptionWhenAttemptingToGetNonexistentHand() {
-		assertThrows(RuntimeException.class, () -> player.GetHand(0));
-		assertThrows(RuntimeException.class, () -> player.GetHand(-1));
+		assertThrows(IllegalArgumentException.class, () -> player.GetHand(0));
+		assertThrows(IllegalArgumentException.class, () -> player.GetHand(-1));
 	}
 	
 	@Test
