@@ -143,7 +143,7 @@ class PlayerTest {
 	
 	@Test
 	void AttemptingToDoubleDownANonExistentHandIsNotAllowed() {
-		// Note: the player has no hands at all initially, so 0 is an invalid index.
+		// Note: the player has no hands at all initially, so 0 is an invalid index at this point.
 		assertThrows(IllegalArgumentException.class, () -> player.DoubleDown(-1));
 		assertThrows(IllegalArgumentException.class, () -> player.DoubleDown(0));
 	}
