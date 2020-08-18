@@ -21,7 +21,7 @@ class PlayerTest {
 	@ParameterizedTest
 	@EnumSource(Rank.class)
 	void SplitAPlayersHand(Rank rank) {
-		PlayerHand hand = new PlayerHand(100);
+		PlayerHand hand = new PlayerHand(50);
 		hand.AddCard(new Card(rank, Suit.Clubs));
 		hand.AddCard(new Card(rank, Suit.Diamonds));
 		
@@ -39,7 +39,7 @@ class PlayerTest {
 	
 	@Test
 	void DoubleDownAPlayersHand() {
-		int bet = 100;
+		int bet = 50;
 		PlayerHand hand = new PlayerHand(bet);
 		player.AddHand(hand);
 		player.DoubleDown(0);
@@ -54,11 +54,25 @@ class PlayerTest {
 		PlayerHand hand = new PlayerHand(100);
 		Card cardToAdd = new Card(Rank.Ace, Suit.Diamonds);
 		player.AddHand(hand);
-		player.DealCardToHand(cardToAdd, 0);
+		player.AddCardToHand(cardToAdd, 0);
 		
 		PlayerHand actualHand = player.GetHand(0);
 		Card actualCard = actualHand.GetCard(0);
 		assertEquals(cardToAdd, actualCard);
+	}
+	
+	@Test
+	void RemoveBalanceEquivalentToTheBetOnTheHandAdded() {
+		PlayerHand hand = new PlayerHand(100);
+		player.AddHand(hand);
+		
+		assertEquals(0, player.GetBalance());
+	}
+	
+	@Test
+	void AddingAHandWithABetGreaterThanThePlayersBalanceIsNotAllowed() {
+		PlayerHand hand = new PlayerHand(2000);
+		assertThrows(InsufficientBalanceException.class, () -> player.AddHand(hand));
 	}
 	
 	@Test
@@ -106,5 +120,47 @@ class PlayerTest {
 	@Test
 	void ThrowAnExceptionWhenAttemptingToCreatePlayerWithNullName() {
 		assertThrows(RuntimeException.class, () -> new Player(null, 100));
+	}
+	
+	@Test
+	void SplittingAHandWithInsufficientBalanceIsNotAllowed() {
+		PlayerHand hand = new PlayerHand(100);
+		player.AddHand(hand);
+		assertThrows(InsufficientBalanceException.class, () -> player.SplitHand(0));
+	}
+	
+	@Test
+	void DealingANullCardToAPlayerIsNotAllowed() {
+		PlayerHand hand = new PlayerHand(100);
+		player.AddHand(hand);
+		assertThrows(NullPointerException.class, () -> player.AddCardToHand(null, 0));
+	}
+	
+	@Test
+	void AddingANullHandIsNotAllowed() {
+		assertThrows(NullPointerException.class, () -> player.AddHand(null));
+	}
+	
+	@Test
+	void AttemptingToDoubleDownANonExistentHandIsNotAllowed() {
+		// Note: the player has no hands at all initially, so 0 is an invalid index.
+		assertThrows(IllegalArgumentException.class, () -> player.DoubleDown(-1));
+		assertThrows(IllegalArgumentException.class, () -> player.DoubleDown(0));
+	}
+	
+	@Test
+	void RemoveAPlayersHands() {
+		Player player = new Player("John Doe", 100);
+		player.AddHand(new PlayerHand(0));
+		player.AddHand(new PlayerHand(0));
+		
+		player.RemoveHands();
+		
+		assertEquals(0, player.GetNumberOfHands());
+	}
+	
+	@Test
+	void ThrowExceptionWhenCheckingIfANonExistentHandIsBusted() {
+		assertThrows(IllegalArgumentException.class, () -> player.IsBusted(0));
 	}
 }

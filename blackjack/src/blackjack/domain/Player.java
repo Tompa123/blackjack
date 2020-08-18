@@ -64,43 +64,74 @@ public class Player {
 		initialBet = 0;
 	}
 	
+	public int GetTotalBet() {
+		int totalBet = 0;
+		for (PlayerHand hand : hands) {
+			totalBet += hand.GetBet();
+		}
+		
+		return totalBet;
+	}
+	
 	public PlayerHand GetHand(int index) {
 		if (!IsValidHandIndex(index)) {
-			throw new IllegalArgumentException("Attempted to get a hand (at index %s) out of bounds. Use the method 'GetNumberOfHands()' "
-									   		 + "before accessing any hands of a player.");
+			String description = "Attempted to get a hand (at index %d) out of bounds. Use the method 'GetNumberOfHands()' "
+			   		 			+ "before accessing any hands of a player.";
+			throw new IllegalArgumentException(description.formatted(index));
 		}
 		
 		return new PlayerHand(hands.get(index));
 	}
 	
 	public boolean IsBusted(int hand) {
+		if (!IsValidHandIndex(hand)) {
+			throw new IllegalArgumentException("Attempted to check whether a hand at invalid index %d is busted.".formatted(hand));
+		}
+		
 		return hands.get(hand).IsBusted();
 	}
 	
 	public void AddCardToHand(Card card, int hand) {
+		Objects.requireNonNull(card, "Cannot add a null card to a player's hand.");
 		hands.get(hand).AddCard(card);
 	}
 	
 	public void AddHand(PlayerHand hand) {
+		Objects.requireNonNull(hand, "Cannot add a null hand to a player's hand.");
+		if (hand.GetBet() > balance) {
+			String description = "Attempted to add hand to a player whose balance is insufficient; the bet (%d) is larger than the available balance (%d).";
+			throw new InsufficientBalanceException(description.formatted(hand.GetBet(), balance));
+		}
+		
+		balance -= hand.GetBet();
 		hands.add(new PlayerHand(hand));
 	}
 	
 	public void DoubleDown(int handIndex) {
-		if (IsValidHandIndex(handIndex)) {
-			hands.get(handIndex).DoubleDown();
+		if (!IsValidHandIndex(handIndex)) {
+			String description = "Attempted to double down a non-existent hand at index %d.";
+			throw new IllegalArgumentException(description.formatted(handIndex));
 		}
+
+		hands.get(handIndex).DoubleDown();
 	}
 	
-	public void SplitHand(int handIndex) {		
+	public PairOfHands SplitHand(int handIndex) {	
 		PlayerHand hand = GetHand(handIndex);
+		if (hand.GetBet() > balance) {
+			throw new InsufficientBalanceException("Attempted to add hand to a player whose balance is insufficient; the bet is larger than the available balance.");
+		}
+		
 		PairOfHands split = hand.Split();
 		hands.add(split.firstHand);
 		hands.add(split.secondHand);
 		hands.remove(handIndex);
+		balance -= hand.GetBet();
+		return split;
 	}
 	
-	public void DealCardToHand(Card card, int hand) {
-		hands.get(hand).AddCard(card);
+	public void RemoveHands() {
+		hands.clear();
 	}
 	
 	private boolean IsValidHandIndex(int index) {

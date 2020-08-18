@@ -123,7 +123,7 @@ class GameTest {
 	
 	@Test
 	void DealingACardToAHandThatBustsShouldMoveOntoTheNextHand() {
-		Player player1 = new Player("John Doe", 100);
+		Player player1 = new Player("John Doe", 200);
 		player1.AddHand(CreateHandWithHardValue21());
 		player1.AddHand(CreateHandWithHardValue21());
 		
@@ -357,10 +357,40 @@ class GameTest {
 	}
 	
 	@Test
+	void DealACardToTheNewHandsWhenSplittingAHand() {
+		LinkedList<Card> cards = new LinkedList<Card>(Arrays.asList(new Card(Rank.Ace, Suit.Hearts), new Card(Rank.Two, Suit.Diamonds)));
+		Deck fakeDeck = new FakeDeck(cards);
+		Game gameWithFakeDeck = new Game(fakeDeck);
+		Player player = new Player("John Doe", 200);
+		PlayerHand hand = new PlayerHand(100);
+		hand.AddCard(new Card(Rank.Ten, Suit.Hearts));
+		hand.AddCard(new Card(Rank.Ten, Suit.Diamonds));
+		player.AddHand(hand);
+		
+		gameWithFakeDeck.AddPlayerToSlot(player, 0);
+		gameWithFakeDeck.SetCurrentTurn(0);
+		gameWithFakeDeck.Split();
+		
+		assertEquals(2, gameWithFakeDeck.GetPlayerAtSlot(0).GetNumberOfHands());
+		
+		PlayerHand firstHand = gameWithFakeDeck.GetPlayerAtSlot(0).GetHand(0);
+		PlayerHand secondHand = gameWithFakeDeck.GetPlayerAtSlot(0).GetHand(1);
+		assertTrue(firstHand.Contains(new Card(Rank.Ten, Suit.Hearts)));
+		assertTrue(firstHand.Contains(new Card(Rank.Ace, Suit.Hearts)));
+		assertTrue(secondHand.Contains(new Card(Rank.Ten, Suit.Diamonds)));
+		assertTrue(secondHand.Contains(new Card(Rank.Two, Suit.Diamonds)));
+	}
+	
+	@Test
+	void SplittingWhileNoGameIsRunningIsNotAllowed() {
+		assertThrows(GameNotStartedException.class, () -> game.Split());
+	}
+	
+	@Test
 	void GetTheStateOfAHandThatDoesNotExistIsNotAllowed() {
 		Player player1 = new Player("John Doe", 100);
 		game.AddPlayerToSlot(player1, 0); // Add a player without any hands.
-		assertThrows(RuntimeException.class, () -> game.GetHandState(0,  0));
+		assertThrows(RuntimeException.class, () -> game.GetHandState(0, 0));
 	}
 	
 	@Test
@@ -368,8 +398,107 @@ class GameTest {
 		assertThrows(PlayerDoesNotExistException.class, () -> game.GetHandState(0,  0));	
 	}
 	
+	@Test
+	void SettingCurrentTurnToAnUnoccupiedSlotIsNotAllowed() {
+		Player player1 = new Player("John Doe", 100);
+		
+		game.AddPlayerToSlot(player1, 2);
+		
+		assertThrows(PlayerDoesNotExistException.class, () -> game.SetCurrentTurn(0));
+		assertThrows(PlayerDoesNotExistException.class, () -> game.SetCurrentTurn(-1));
+	}
+	
+	@Test
+	void DoublingDownShouldDoublePlayersBet() {
+		Player player1 = new Player("John Doe", 100);
+		player1.PlaceInitialBet(50);
+		
+		game.AddPlayerToSlot(player1, 0);
+		game.StartNewRound();
+		game.DoubleDown();
+		
+		Player actualPlayer = game.GetPlayerAtSlot(0);
+		assertEquals(100, actualPlayer.GetTotalBet());
+	}
+	
+	@Test
+	void DoublingDownWhileNoGameIsRunningIsNotAllowed() {
+		assertThrows(GameNotStartedException.class, () -> game.DoubleDown());
+	}
+	
+	@Test
+	void DoublingDownShouldMoveOntoTheNextPlayerIfNoHandsLeftToPlay() {
+		Player player1 = new Player("John Doe", 100);
+		Player player2 = new Player("Jane Doe", 100);
+		
+		game.AddPlayerToSlot(player1, 0);
+		game.AddPlayerToSlot(player2, 1);
+		game.StartNewRound();
+		game.DoubleDown();
+		
+		assertEquals(player2, game.GetCurrentPlayer());
+	}
+	
+	@Test
+	void DoublingDownShouldMoveOntoTheNextHandIfThereIsOneLeftToPlay() {
+		Player player1 = new Player("John Doe", 100);
+		player1.AddHand(new PlayerHand(50));
+		player1.AddHand(new PlayerHand(50));
+		
+		game.AddPlayerToSlot(player1, 0);
+		game.SetCurrentTurn(0);
+		game.DoubleDown();
+		
+		assertEquals(player1, game.GetCurrentPlayer());
+		assertEquals(1, game.GetCurrentHand());
+	}
+	
+	@Test
+	void DoublingDownShouldGiveThePlayerASingleCard() {
+		Player player1 = new Player("John Doe", 100);
+		
+		game.AddPlayerToSlot(player1, 0);
+		game.StartNewRound();
+		game.DoubleDown();
+		
+		// Remember, after calling StartNewRound(), all players have 2 cards. Therefore, we expect the player to have
+		// 3 cards after doubling down.
+		Player actualPlayer = game.GetPlayerAtSlot(0);
+		assertEquals(3, actualPlayer.GetHand(0).GetNumberOfCards());
+	}
+	
+	@Test
+	void StartingANewRoundShouldRemovePreviousHands() {
+		Player player1 = new Player("John Doe", 100);
+		PlayerHand hand = new PlayerHand(50);
+		hand.AddCard(new Card(Rank.Ace, Suit.Clubs));
+		hand.AddCard(new Card(Rank.Ten, Suit.Diamonds));
+		hand.AddCard(new Card(Rank.Eight, Suit.Hearts));
+		player1.AddHand(hand);
+		
+		game.AddPlayerToSlot(player1, 0);
+		game.StartNewRound();
+		
+		assertEquals(1, game.GetPlayerAtSlot(0).GetNumberOfHands());
+		assertEquals(2, game.GetPlayerAtSlot(0).GetHand(0).GetNumberOfCards());
+	}
+	
+	@Test
+	void StartingANewRoundShouldResetTheDealersHand() {
+		Player player = new Player("John Doe", 100);
+		Hand dealerHand = new Hand();
+		dealerHand.AddCard(new Card(Rank.Ace, Suit.Clubs));
+		dealerHand.AddCard(new Card(Rank.Eight, Suit.Diamonds));
+		
+		game.SetDealerHand(dealerHand);
+		game.AddPlayerToSlot(player, 0);
+		game.StartNewRound();
+		
+		assertEquals(1, game.GetDealerHand().GetNumberOfCards());
+	}
+	
 	private PlayerHand CreateHandWithHardValue21() {
-		PlayerHand hand = new PlayerHand(100);
+		PlayerHand hand = new PlayerHand(0);
 		hand.AddCard(new Card(Rank.Ten, Suit.Clubs));
 		hand.AddCard(new Card(Rank.Ten, Suit.Diamonds));
 		hand.AddCard(new Card(Rank.Ace, Suit.Diamonds));

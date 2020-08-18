@@ -34,13 +34,18 @@ public class Game {
 												"Use the method 'AtLeastOneActivePlayer()' to make sure there are players before starting the game.");
 		}
 		
+		dealer.RemoveCards();
 		dealer.AddCard(deck.PickRandomCard());
 		SetCurrentTurn(GetFirstOccupiedSlot());
 		DealStarterHands();
 	}
 	
-	public void SetCurrentTurn(int turn) {
-		currentTurn = turn;
+	public void SetCurrentTurn(int slot) {
+		if (!IsSlotInbounds(slot) || players[slot] == null) {
+			throw new PlayerDoesNotExistException("No player is occupying the slot %d.".formatted(slot));
+		}
+		
+		currentTurn = slot;
 		currentHand = 0;
 	}
 	
@@ -55,13 +60,13 @@ public class Game {
 		}
 		
 		Player player = players[slot];
-		PlayerHand hand = player.GetHand(handIndex);
+		PlayerHand playerHand = player.GetHand(handIndex);
 		
-		if (hand.IsBusted()) {
+		if (playerHand.IsBusted()) {
 			return HandState.Bust;
-		} else if (hand.DistanceToBlackJack() > dealer.DistanceToBlackJack()) {
+		} else if (playerHand.DistanceToBlackJack() > dealer.DistanceToBlackJack()) {
 			return HandState.Loss;
-		} else if (hand.DistanceToBlackJack() < dealer.DistanceToBlackJack()) {
+		} else if (playerHand.DistanceToBlackJack() < dealer.DistanceToBlackJack()) {
 			return HandState.Win;
 		} else {
 			return HandState.Push;
@@ -77,6 +82,17 @@ public class Game {
 	
 	public Hand GetDealerHand() {
 		return new Hand(dealer);
+	}
+	
+	public void DoubleDown() {
+		if (!CurrentlyRunning()) {
+			throw new GameNotStartedException("Can't double down; no game is currently running.");
+		}
+		
+		Player player = players[currentTurn];
+		player.DoubleDown(currentHand);
+		player.AddCardToHand(deck.PickRandomCard(), currentHand);
+		MoveToNextHand();
 	}
 	
 	public void Hit() {
@@ -98,6 +114,19 @@ public class Game {
 		}
 		
 		MoveToNextHand();
+	}
+	
+	public void Split() {
+		if (!CurrentlyRunning()) {
+			throw new GameNotStartedException("Cannot split; no game is running.");
+		} else if (players[currentTurn].GetBalance() < players[currentTurn].GetHand(currentHand).GetBet()) {
+			throw new InsufficientBalanceException("Attempted to split a player's hand, but the player doesn't have sufficient balance.");
+		}
+		
+		Player player = players[currentTurn];
+		PairOfHands hand = player.SplitHand(currentHand);
+		hand.firstHand.AddCard(deck.PickRandomCard());
+		hand.secondHand.AddCard(deck.PickRandomCard());
 	}
 	
 	public Player GetCurrentPlayer() {
@@ -122,7 +151,7 @@ public class Game {
 	
 	public void AddPlayerToFirstVacantSlot(Player player) {
 		if (IsFull()) {
-			throw new GameIsFullException("Attempted to add a player to full game. Use the 'IsFull()' method before attempting to " +
+			throw new GameIsFullException("Attempted to add a player to a full game. Use the 'IsFull()' method before attempting to " +
 										  "add a player to a game.");
 		}
 		
@@ -187,8 +216,7 @@ public class Game {
 			if (nextSlot != DEALER_SLOT) {
 				SetCurrentTurn(nextSlot);
 			} else {
-				GiveDealerCards();
-				SetCurrentTurn(DEALER_SLOT);
+				EndGame();
 			}
 		} else {
 			currentHand++;
@@ -205,14 +233,20 @@ public class Game {
 		return DEALER_SLOT;
 	}
 	
+	private void EndGame() {
+		GiveDealerCards();
+		currentTurn = DEALER_SLOT;
+	}
+	
 	private void DealStarterHands() {
 		for (Player player : players) {
 			if (player != null) {
-				PlayerHand hand = new PlayerHand(100);
+				PlayerHand hand = new PlayerHand(player.GetInitialBet());
 				hand.AddCard(deck.PickRandomCard());
 				hand.AddCard(deck.PickRandomCard());
+				
+				player.RemoveHands();
 				player.AddHand(hand);
-				player.WithdrawBet();
 			}
 		}		
 	}

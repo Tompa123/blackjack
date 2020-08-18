@@ -20,13 +20,17 @@ public class PlayerHand extends Hand {
 		return bet;
 	}
 	
+	public int GetDoubledDownBet() {
+		return bet * 2;
+	}
+	
 	public void DoubleDown() {
 		if (doubleDown) {
 			return;
 		}
 		
 		doubleDown = true;
-		bet *= 2;
+		bet = GetDoubledDownBet();
 	}
 	
 	public boolean CanBeSplit() {

@@ -146,4 +146,31 @@ class HandTest {
 		
 		assertEquals(6, hand.DistanceToBlackJack());
 	}
+	
+	@Test
+	void ReturnWhetherAHandContainsACertainCardOrNot() {
+		hand.AddCard(new Card(Rank.Ace, Suit.Clubs));
+		
+		assertTrue(hand.Contains(new Card(Rank.Ace, Suit.Clubs)));
+		assertFalse(hand.Contains(new Card(Rank.Ace, Suit.Hearts)));
+	}
+	
+	@Test
+	void CountAllCards() {
+		hand.AddCard(new Card(Rank.Ace, Suit.Clubs));
+		hand.AddCard(new Card(Rank.Eight, Suit.Hearts));
+		hand.AddCard(new Card(Rank.Two, Suit.Hearts));
+		
+		assertEquals(3, hand.GetNumberOfCards());
+	}
+	
+	@Test
+	void RemoveAllCardsInAHand() {
+		hand.AddCard(new Card(Rank.Ace, Suit.Clubs));
+		hand.AddCard(new Card(Rank.Eight, Suit.Hearts));
+		
+		hand.RemoveCards();
+		
+		assertEquals(0, hand.GetNumberOfCards());
+	}
 }

@@ -13,6 +13,10 @@ public class Hand {
 		cards = new LinkedList<Card>(otherHand.cards);
 	}
 	
+	public boolean Contains(Card card) {
+		return cards.contains(card);
+	}
+	
 	public int GetNumberOfCards() {
 		return cards.size();
 	}
@@ -41,6 +45,10 @@ public class Hand {
 	
 	public void AddCard(Card card) {
 		cards.add(card);
+	}
+
+	public void RemoveCards() {
+		cards.clear();
 	}
 	
 	public boolean IsBusted() {
