@@ -47,6 +47,10 @@ public class Player {
 		initialBet = bet;
 	}
 	
+	public String GetName() {
+		return name;
+	}
+	
 	public int GetInitialBet() {
 		return initialBet;
 	}

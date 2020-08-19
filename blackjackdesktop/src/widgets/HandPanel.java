@@ -18,14 +18,19 @@ import blackjack.domain.*;
 
 public class HandPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
-	private Timer timer;
 	private JLayeredPane cardContainer;
 	private JLabel handValue;
 	private Hand hand;
 	
+	public HandPanel(Hand hand) {
+		this();
+		for (int i = 0; i < hand.GetNumberOfCards(); ++i) {
+			addCard(hand.GetCard(i));
+		}
+	}
+	
 	public HandPanel() {
 		hand = new Hand();
-		
 		handValue = new JLabel("0");
 		handValue.setAlignmentX(CENTER_ALIGNMENT);
 		cardContainer = new JLayeredPane();
@@ -40,11 +45,15 @@ public class HandPanel extends JPanel {
 	
 	public void addCard(Card card) {
 		CardPanel cardImage = new CardPanel(card);
-		cardImage.setBounds(0, cardContainer.getComponentCount() * 15, 125, 200);
+		cardImage.setBounds(0, cardContainer.getComponentCount() * 20, 125, 200);
 
 		hand.AddCard(card);
 		displayHandValue();
 		cardContainer.add(cardImage, Integer.valueOf(cardContainer.getComponentCount()));
+	}
+	
+	public void removeCards() {
+		cardContainer.removeAll();
 	}
 	
 	private void displayHandValue() {
