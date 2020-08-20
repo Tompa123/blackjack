@@ -15,6 +15,7 @@ public class PlayerPanel extends JPanel {
 	private Player player;
 	private JLabel name;
 	private JPanel handsPanel;
+	private BetDisplay betDisplay;
 	
 	public PlayerPanel(Player player) {
 		this.player = player;
@@ -24,13 +25,16 @@ public class PlayerPanel extends JPanel {
 		handsPanel = new JPanel();
 		handsPanel.setLayout(new FlowLayout());
 		
-		add(this.name);
+		betDisplay = new BetDisplay(player.GetTotalBet());
+		
 		add(handsPanel);
+		add(this.name);
+		add(betDisplay);
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		
 		for (int i = 0; i < player.GetNumberOfHands(); ++i) {
 			addHand(player.GetHand(i));
-		}
+		}	
 	}
 	
 	public void addHand(Hand hand) {
