@@ -33,14 +33,17 @@ public class HandPanel extends JPanel {
 		hand = new Hand();
 		handValue = new JLabel("0");
 		handValue.setAlignmentX(CENTER_ALIGNMENT);
+		handValue.setForeground(GraphicsSettings.TEXT_COLOR);
 		cardContainer = new JLayeredPane();
 		cardContainer.setPreferredSize(new Dimension(125, 300));
-		
+		cardContainer.setOpaque(false);
+
 		add(handValue, SwingConstants.CENTER);
 		add(cardContainer);
-		
-		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
 		setVisible(true);
+		setOpaque(false);
+		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 	}
 	
 	public void addCard(Card card) {

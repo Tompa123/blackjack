@@ -21,20 +21,23 @@ public class PlayerPanel extends JPanel {
 		this.player = player;
 		this.name = new JLabel(player.GetName());
 		this.name.setAlignmentX(CENTER_ALIGNMENT);
+		this.name.setForeground(GraphicsSettings.TEXT_COLOR);
 		
 		handsPanel = new JPanel();
 		handsPanel.setLayout(new FlowLayout());
+		handsPanel.setOpaque(false);
 		
 		betDisplay = new BetDisplay(player.GetTotalBet());
 		
 		add(handsPanel);
 		add(this.name);
 		add(betDisplay);
-		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		
 		for (int i = 0; i < player.GetNumberOfHands(); ++i) {
 			addHand(player.GetHand(i));
-		}	
+		}
+		
+		setOpaque(false);
+		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 	}
 	
 	public void addHand(Hand hand) {

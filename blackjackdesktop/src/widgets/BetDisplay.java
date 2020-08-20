@@ -32,6 +32,7 @@ public class BetDisplay extends JPanel {
 		
 		setPreferredSize(new Dimension(64, 64));
 		betLabel.setBounds(0, 0, this.getWidth(), this.getHeight());
+		setOpaque(false);
 		add(betLabel);
 	}
 	

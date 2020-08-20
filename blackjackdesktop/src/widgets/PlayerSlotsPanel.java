@@ -7,7 +7,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import blackjack.domain.Player;
-import blackjack.domain.PlayerHand;
 
 public class PlayerSlotsPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -15,15 +14,18 @@ public class PlayerSlotsPanel extends JPanel {
 	
 	public PlayerSlotsPanel(int slots) {
 		FlowLayout mainLayout = new FlowLayout();
+		mainLayout.setHgap(30);
 		slotPanels = new JPanel[slots];
 		
 		for (int slot = 0; slot < slots; ++slot) {
 			JPanel slotPanel = new JPanel();
+			slotPanel.setOpaque(false);
 			add(slotPanel);
 			slotPanels[slot] = slotPanel;
 			displaySlotAsVacant(slot);
 		}
 		
+		setOpaque(false);
 		setLayout(mainLayout);
 	}
 	
@@ -43,6 +45,7 @@ public class PlayerSlotsPanel extends JPanel {
 		
 		slotPanels[slot].removeAll();
 		JLabel label = new JLabel("Vacant Slot");
+		label.setForeground(GraphicsSettings.TEXT_COLOR);
 		label.setAlignmentX(CENTER_ALIGNMENT);
 		slotPanels[slot].add(label);
 	}
