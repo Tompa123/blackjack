@@ -57,7 +57,9 @@ public class HandPanel extends JPanel {
 	}
 	
 	private void displayHandValue() {
-		if (hand.HardValue() != hand.SoftValue()) {
+		if (hand.IsBlackJack()) {
+			handValue.setText("BLACKJACK");
+		} else if (hand.HardValue() != hand.SoftValue() && hand.SoftValue() <= Hand.BLACK_JACK_LIMIT) {
 			handValue.setText("%d/%d".formatted(hand.HardValue(), hand.SoftValue()));
 		} else {
 			handValue.setText(Integer.toString(hand.HardValue()));

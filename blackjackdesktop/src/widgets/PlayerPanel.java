@@ -6,6 +6,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import blackjack.domain.Card;
 import blackjack.domain.Hand;
 import blackjack.domain.Player;
 
@@ -26,11 +27,23 @@ public class PlayerPanel extends JPanel {
 		add(this.name);
 		add(handsPanel);
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		
+		for (int i = 0; i < player.GetNumberOfHands(); ++i) {
+			addHand(player.GetHand(i));
+		}
 	}
 	
 	public void addHand(Hand hand) {
 		HandPanel handPanel = new HandPanel(hand);
 		handsPanel.add(handPanel);
+		revalidate();
+	}
+	
+	public void addCardToHand(Card card, int hand) {
+		if (hand >= 0 && hand < player.GetNumberOfHands()) {
+			HandPanel panel = (HandPanel)handsPanel.getComponent(hand);
+			panel.addCard(card);
+		}
 	}
 	
 	public Player getPlayer() {

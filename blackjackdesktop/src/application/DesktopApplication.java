@@ -6,6 +6,8 @@ import widgets.*;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Random;
@@ -15,7 +17,6 @@ import javax.swing.*;
 
 public class DesktopApplication {
 	public static void main(String[] args) {
-		//JFrame.setDefaultLookAndFeelDecorated(true);
 		JFrame frame = new JFrame("My First GUI");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(1000, 300);
@@ -26,27 +27,38 @@ public class DesktopApplication {
 		mainLayout.setHgap(20);
 		mainPanel.setLayout(mainLayout);
 		
-		PlayerPanel player = new PlayerPanel(new Player("John Doe", 100));
-		player.addHand(createRandomHand());
+		Player player = new Player("John Doe", 100);
+		player.AddHand(createRandomHand());
 
-		PlayerPanel player2 = new PlayerPanel(new Player("Jane Doe", 100));
-		player2.addHand(createRandomHand());
+		Player player2 = new Player("Jane Doe", 100);
+		player2.AddHand(createRandomHand());
 		
-		PlayerPanel player3 = new PlayerPanel(new Player("Jane Doe II", 100));
-		player3.addHand(createRandomHand());
-		player3.addHand(createRandomHand());
+		Player player3 = new Player("Jane Doe II", 100);
+		player3.AddHand(createRandomHand());
+		player3.AddHand(createRandomHand());
 		
-		mainPanel.add(player);
-		mainPanel.add(player2);
-		mainPanel.add(player3);
+		Player player4 = new Player("Jane Doe III", 100);
+		player4.AddHand(createRandomHand());
+		player4.AddHand(createRandomHand());
+		
+		Player player5 = new Player("Jane Doe IV", 100);
+		
+		PlayerSlotsPanel slots = new PlayerSlotsPanel(5);
+		slots.displayPlayer(0, player);
+		slots.displayPlayer(1, player2);
+		slots.displayPlayer(2, player3);
+		slots.displayPlayer(3, player4);
+		slots.displayPlayer(4, player5);
+		
+		mainPanel.add(slots);
 		frame.add(mainPanel);
 		frame.pack();
 		frame.setVisible(true);
 	}
 	
-	private static Hand createRandomHand() {
+	private static PlayerHand createRandomHand() {
 		Deck deck = new Deck();
-		Hand hand = new Hand();
+		PlayerHand hand = new PlayerHand(0);
 		
 		for (int i = 0; i < pickNumberBetween(1, 4); ++i) {
 			hand.AddCard(deck.PickRandomCard());
