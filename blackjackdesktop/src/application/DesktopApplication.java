@@ -1,6 +1,7 @@
 package application;
 
 import blackjack.domain.*;
+import blackjack.domain.Action;
 import widgets.*;
 
 import java.awt.Color;
@@ -30,9 +31,11 @@ public class DesktopApplication {
 			e.printStackTrace();
 		}
 
-		frame.add(new GameBoard());
+		GameBoard board = new GameBoard(frame);
+		frame.add(board);
 		frame.pack();
 		frame.setVisible(true);
+		board.showDialog();
 	}
 }
  

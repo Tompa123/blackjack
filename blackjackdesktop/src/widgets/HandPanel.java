@@ -21,6 +21,7 @@ public class HandPanel extends JPanel {
 	private JLayeredPane cardContainer;
 	private JLabel handValue;
 	private Hand hand;
+	private int cardWidth = 125;
 	
 	public HandPanel(Hand hand) {
 		this();
@@ -35,7 +36,7 @@ public class HandPanel extends JPanel {
 		handValue.setAlignmentX(CENTER_ALIGNMENT);
 		handValue.setForeground(GraphicsSettings.TEXT_COLOR);
 		cardContainer = new JLayeredPane();
-		cardContainer.setPreferredSize(new Dimension(125, 300));
+		cardContainer.setPreferredSize(new Dimension(cardWidth, 300));
 		cardContainer.setOpaque(false);
 
 		add(handValue, SwingConstants.CENTER);
@@ -48,7 +49,7 @@ public class HandPanel extends JPanel {
 	
 	public void addCard(Card card) {
 		CardPanel cardImage = new CardPanel(card);
-		cardImage.setBounds(0, cardContainer.getComponentCount() * 20, 125, 200);
+		cardImage.setBounds(0, cardContainer.getComponentCount() * 20, cardWidth, 200);
 
 		hand.AddCard(card);
 		displayHandValue();

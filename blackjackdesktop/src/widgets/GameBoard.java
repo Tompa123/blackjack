@@ -9,10 +9,13 @@ import java.util.Random;
 
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import blackjack.domain.Action;
 import blackjack.domain.Deck;
+import blackjack.domain.Game;
 import blackjack.domain.Player;
 import blackjack.domain.PlayerHand;
 
@@ -20,14 +23,17 @@ public class GameBoard extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private BufferedImage backgroundImage;
 	private PlayerSlotsPanel slots;
-	private HandPanel dealerPanel;
+	private HandPanel dealer;
+	private Game game;
+	private PlayerActionDialog dialog;
 	
-	public GameBoard() {
+	public GameBoard(JFrame parent) {
 		try {
 			backgroundImage = ImageIO.read(new File("resources/background.jpg"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
 		
 		BoxLayout mainLayout = new BoxLayout(this, BoxLayout.Y_AXIS);
 		
@@ -56,13 +62,21 @@ public class GameBoard extends JPanel {
 		slots.displayPlayer(4, player5);
 		
 		JPanel dealerPanel = new JPanel(new FlowLayout());
-		HandPanel dealer = new HandPanel(createRandomHand());
+		dealer = new HandPanel(createRandomHand());
 		dealerPanel.add(dealer);
 		dealerPanel.setOpaque(false);
 		
+		dialog = new PlayerActionDialog(parent);
 		add(dealerPanel);
 		add(slots);
 		setLayout(mainLayout);
+	}
+	
+	public void showDialog() {
+		int centerX = (this.getWidth() / 2) - dialog.getWidth() / 2;
+		int centerY = (this.getHeight() / 2) - dialog.getHeight() / 2;
+		dialog.setBounds(centerX, centerY, dialog.getWidth(), dialog.getHeight());
+		dialog.askUserForAnAction();
 	}
 	
 	@Override
