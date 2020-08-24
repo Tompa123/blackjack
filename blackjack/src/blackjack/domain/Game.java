@@ -1,8 +1,7 @@
 package blackjack.domain;
 
-import java.util.Random;
-
 import blackjack.exceptions.*;
+import blackjack.events.*;
 
 public class Game {
 	private Player[] players;
@@ -10,6 +9,10 @@ public class Game {
 	private int currentHand;
 	private Deck deck;
 	private Hand dealer;
+	private PlayerStateUpdated playerStateUpdatedEvent = new PlayerStateUpdated();
+	private GameEnded gameEndedEvent = new GameEnded();
+	private DealerUpdated dealerUpdatedEvent = new DealerUpdated();
+	private CurrentSlotChanged currentSlotChangedEvent = new CurrentSlotChanged();
 	private static final int DEALER_DRAW_LIMIT = 17;
 	private static final int NO_VACANT_SLOTS = -1;
 	private static final int NO_PLAYER_FOUND = -1;
@@ -28,16 +31,51 @@ public class Game {
 		this.deck = deck;
 	}
 	
+	public PlayerStateUpdated PlayerUpdatedEvent() {
+		return playerStateUpdatedEvent;
+	}
+	
+	public GameEnded GameEndedEvent() {
+		return gameEndedEvent;
+	}
+	
+	public DealerUpdated DealerUpdatedEvent() {
+		return dealerUpdatedEvent;
+	}
+	
+	public CurrentSlotChanged CurrentSlotChanged() {
+		return currentSlotChangedEvent;
+	}
+	
 	public void StartNewRound() {
 		if (!AtLeastOneActivePlayer()) {
-			throw new NoActivePlayersException("Attempted to start a game with no players in it." +
+			throw new NoActivePlayersException("Attempted to start a game with no players in it. " +
 												"Use the method 'AtLeastOneActivePlayer()' to make sure there are players before starting the game.");
 		}
 		
 		dealer.RemoveCards();
 		dealer.AddCard(deck.PickRandomCard());
-		SetCurrentTurn(GetFirstOccupiedSlot());
+		dealerUpdatedEvent.Fire(dealer);
+		
 		DealStarterHands();
+		SetCurrentTurn(GetFirstOccupiedSlot());
+	}
+	
+	public void PerformActionOnCurrentPlayer(Action action) {
+		switch(action) {
+		case Hit:
+			Hit();
+			break;
+		case Stand:
+			Stand();
+			break;
+		case DoubleDown:
+			DoubleDown();
+			break;
+		case Split:
+			Split();
+			break;
+		}
 	}
 	
 	public void SetCurrentTurn(int slot) {
@@ -47,6 +85,7 @@ public class Game {
 		
 		currentTurn = slot;
 		currentHand = 0;
+		currentSlotChangedEvent.Fire(currentTurn, currentHand);
 	}
 	
 	public void SetDealerHand(Hand hand) {
@@ -78,6 +117,8 @@ public class Game {
 				&& (dealer.SoftValue() < DEALER_DRAW_LIMIT || dealer.SoftValue() > Hand.BLACK_JACK_LIMIT)) {
 			dealer.AddCard(deck.PickRandomCard());
 		}
+		
+		dealerUpdatedEvent.Fire(dealer);
 	}
 	
 	public Hand GetDealerHand() {
@@ -92,6 +133,7 @@ public class Game {
 		Player player = players[currentTurn];
 		player.DoubleDown(currentHand);
 		player.AddCardToHand(deck.PickRandomCard(), currentHand);
+		playerStateUpdatedEvent.Fire(player, currentTurn);
 		MoveToNextHand();
 	}
 	
@@ -103,8 +145,12 @@ public class Game {
 		Player currentPlayer = players[currentTurn];
 		currentPlayer.AddCardToHand(deck.PickRandomCard(), currentHand);
 		PlayerHand hand = currentPlayer.GetHand(currentHand);
+		
+		playerStateUpdatedEvent.Fire(currentPlayer, currentTurn);
 		if (hand.IsBusted()) {
 			MoveToNextHand();
+		} else {
+			currentSlotChangedEvent.Fire(currentTurn, currentHand);
 		}
 	}
 	
@@ -127,6 +173,9 @@ public class Game {
 		PairOfHands hand = player.SplitHand(currentHand);
 		hand.firstHand.AddCard(deck.PickRandomCard());
 		hand.secondHand.AddCard(deck.PickRandomCard());
+		
+		playerStateUpdatedEvent.Fire(player, currentTurn);
+		currentSlotChangedEvent.Fire(currentTurn, currentHand);
 	}
 	
 	public Player GetCurrentPlayer() {
@@ -147,6 +196,7 @@ public class Game {
 		}
 		
 		players[slot] = player;
+		playerStateUpdatedEvent.Fire(player, slot);
 	}
 	
 	public void AddPlayerToFirstVacantSlot(Player player) {
@@ -220,6 +270,7 @@ public class Game {
 			}
 		} else {
 			currentHand++;
+			currentSlotChangedEvent.Fire(currentTurn, currentHand);
 		}
 	}
 	
@@ -236,9 +287,11 @@ public class Game {
 	private void EndGame() {
 		GiveDealerCards();
 		currentTurn = DEALER_SLOT;
+		gameEndedEvent.Fire();
 	}
 	
 	private void DealStarterHands() {
+		int slot = 0;
 		for (Player player : players) {
 			if (player != null) {
 				PlayerHand hand = new PlayerHand(player.GetInitialBet());
@@ -247,7 +300,9 @@ public class Game {
 				
 				player.RemoveHands();
 				player.AddHand(hand);
+				playerStateUpdatedEvent.Fire(player, slot);
 			}
+			slot++;
 		}		
 	}
 }

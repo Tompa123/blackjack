@@ -11,10 +11,12 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 
 import blackjack.domain.Action;
 
 public class PlayerActionDialog extends JDialog {
+	private static final long serialVersionUID = 1L;
 	private JButton stand = new JButton("Stand");
 	private JButton hit = new JButton("Hit");
 	private JButton split = new JButton("Split");
@@ -42,7 +44,12 @@ public class PlayerActionDialog extends JDialog {
 		pack();
 	}
 	
+	public void disableSplitting() {
+		split.setEnabled(false);
+	}
+	
 	public Action askUserForAnAction() {
+		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		setVisible(true);
 		return answer;
 	}
@@ -75,10 +82,6 @@ public class PlayerActionDialog extends JDialog {
 	
 	private void selectAnswer(Action action) {
 		answer = action;
-		close();
-	}
-	
-	private void close() {
 		setVisible(false);
 		dispose();
 	}

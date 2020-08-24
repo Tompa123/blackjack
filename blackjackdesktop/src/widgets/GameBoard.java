@@ -1,6 +1,7 @@
 package widgets;
 
 import java.awt.FlowLayout;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -11,72 +12,88 @@ import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 
-import blackjack.domain.Action;
-import blackjack.domain.Deck;
-import blackjack.domain.Game;
-import blackjack.domain.Player;
-import blackjack.domain.PlayerHand;
+import application.ActionInput;
+import application.ComputerInput;
+import application.PlayerInput;
+import blackjack.domain.*;
+import blackjack.events.*;
 
 public class GameBoard extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private BufferedImage backgroundImage;
 	private PlayerSlotsPanel slots;
-	private HandPanel dealer;
-	private Game game;
-	private PlayerActionDialog dialog;
+	private JPanel dealerPanel = new JPanel(new FlowLayout());
+	private Game game = new Game();
+	private final int REAL_PLAYER_SLOT = 0;
+	private Frame parent;
 	
-	public GameBoard(JFrame parent) {
+	public GameBoard(Frame parent) {
+		this.parent = parent;
+		
 		try {
 			backgroundImage = ImageIO.read(new File("resources/background.jpg"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
-		
 		BoxLayout mainLayout = new BoxLayout(this, BoxLayout.Y_AXIS);
-		
-		Player player = new Player("John Doe", 100);
-		player.AddHand(createRandomHand());
-
-		Player player2 = new Player("Jane Doe", 100);
-		player2.AddHand(createRandomHand());
-		
-		Player player3 = new Player("Jane Doe II", 100);
-		player3.AddHand(createRandomHand());
-		player3.AddHand(createRandomHand());
-		
-		Player player4 = new Player("Jane Doe III", 100);
-		player4.AddHand(createRandomHand());
-		player4.AddHand(createRandomHand());
-		
-		Player player5 = new Player("Jane Doe IV", 100);
-		player5.AddHand(createRandomHand());
-		
-		slots = new PlayerSlotsPanel(5);
-		slots.displayPlayer(0, player);
-		slots.displayPlayer(1, player2);
-		slots.displayPlayer(2, player3);
-		slots.displayPlayer(3, player4);
-		slots.displayPlayer(4, player5);
-		
-		JPanel dealerPanel = new JPanel(new FlowLayout());
-		dealer = new HandPanel(createRandomHand());
-		dealerPanel.add(dealer);
+		slots = new PlayerSlotsPanel(Game.MAX_SLOTS);
 		dealerPanel.setOpaque(false);
 		
-		dialog = new PlayerActionDialog(parent);
 		add(dealerPanel);
 		add(slots);
+		
+		game.PlayerUpdatedEvent().Subscribe(new PlayerUpdateListener() {
+			public void PlayerUpdated(Player player, int slot) {
+				slots.displayPlayer(player, slot);
+				parent.pack();
+			}
+		});
+		
+		game.DealerUpdatedEvent().Subscribe(new DealerUpdatedListener() {
+			public void HandUpdated(Hand hand) {
+				dealerPanel.removeAll();
+				dealerPanel.add(new HandPanel(hand));
+				parent.pack();
+			}
+		});
+		
+		game.CurrentSlotChanged().Subscribe(new CurrentSlotChangedListener() {
+			public void SlotChanged(int slot, int hand) {
+				ActionInput input = getInput(slot);
+				Player player = game.GetPlayerAtSlot(slot);
+				slots.highlight(slot, hand);
+				
+				Action action = input.GetAction(player, player.GetHand(hand));
+				game.PerformActionOnCurrentPlayer(action);
+			}
+		});
+		
+		game.AddPlayerToSlot(new Player("You", 10000), REAL_PLAYER_SLOT);
+		game.AddPlayerToSlot(new Player("John Doe", 100), 2);
+		game.AddPlayerToSlot(new Player("Jane Doe", 100), 3);
 		setLayout(mainLayout);
 	}
 	
-	public void showDialog() {
+	public void start() {
+		game.StartNewRound();
+	}
+	
+	public void showActionDialog() {
+		PlayerActionDialog dialog = new PlayerActionDialog(parent);
 		int centerX = (this.getWidth() / 2) - dialog.getWidth() / 2;
 		int centerY = (this.getHeight() / 2) - dialog.getHeight() / 2;
 		dialog.setBounds(centerX, centerY, dialog.getWidth(), dialog.getHeight());
 		dialog.askUserForAnAction();
+	}
+	
+	private ActionInput getInput(int slot) {
+		if (slot == REAL_PLAYER_SLOT) {
+			return new PlayerInput(this.parent);
+		} else {
+			return new ComputerInput();
+		}
 	}
 	
 	@Override
@@ -85,21 +102,5 @@ public class GameBoard extends JPanel {
 		if (backgroundImage != null) {
 			g.drawImage(backgroundImage, 0, 0, this.getWidth(), this.getHeight(), null);
 		} 
-	}
-	
-	private static PlayerHand createRandomHand() {
-		Deck deck = new Deck();
-		PlayerHand hand = new PlayerHand(10);
-		
-		for (int i = 0; i < pickNumberBetween(1, 4); ++i) {
-			hand.AddCard(deck.PickRandomCard());
-		}
-		
-		return hand;
-	}
-	
-	private static int pickNumberBetween(int min, int max) {
-		Random rng = new Random();
-		return rng.nextInt(max) % max + min;
 	}
 }

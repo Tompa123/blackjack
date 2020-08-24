@@ -35,7 +35,8 @@ public class DesktopApplication {
 		frame.add(board);
 		frame.pack();
 		frame.setVisible(true);
-		board.showDialog();
+		
+		board.start();
 	}
 }
  

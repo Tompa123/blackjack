@@ -1,5 +1,6 @@
 package widgets;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -22,6 +23,7 @@ public class HandPanel extends JPanel {
 	private JLabel handValue;
 	private Hand hand;
 	private int cardWidth = 125;
+	private Color textColor = GraphicsSettings.TEXT_COLOR;
 	
 	public HandPanel(Hand hand) {
 		this();
@@ -56,12 +58,26 @@ public class HandPanel extends JPanel {
 		cardContainer.add(cardImage, Integer.valueOf(cardContainer.getComponentCount()));
 	}
 	
+	public void highlight() {
+		handValue.setForeground(GraphicsSettings.HIGHLIGHT_COLOR);
+	}
+	
+	public void removeHighlight() {
+		handValue.setForeground(textColor);
+	}
+	
 	public void removeCards() {
 		cardContainer.removeAll();
 	}
 	
 	private void displayHandValue() {
-		if (hand.IsBlackJack()) {
+		textColor = GraphicsSettings.TEXT_COLOR;
+		handValue.setForeground(textColor);
+		if (hand.IsBusted()) {
+			handValue.setText("BUST (%d)".formatted(hand.HardValue()));
+			handValue.setForeground(GraphicsSettings.BUST_COLOR);
+			textColor = GraphicsSettings.BUST_COLOR;
+		} else if (hand.IsBlackJack()) {
 			handValue.setText("BLACKJACK");
 		} else if (hand.HardValue() != hand.SoftValue() && hand.SoftValue() <= Hand.BLACK_JACK_LIMIT) {
 			handValue.setText("%d/%d".formatted(hand.HardValue(), hand.SoftValue()));
