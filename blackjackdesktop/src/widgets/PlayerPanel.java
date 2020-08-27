@@ -1,8 +1,8 @@
 package widgets;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
+import java.util.LinkedList;
 
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -10,29 +10,31 @@ import javax.swing.JPanel;
 
 import blackjack.domain.Card;
 import blackjack.domain.Hand;
+import blackjack.domain.HandState;
 import blackjack.domain.Player;
 
 public class PlayerPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private Player player;
 	private JLabel name;
-	private JPanel handsPanel;
+	private JPanel handContainer;
 	private BetDisplay betDisplay;
+	private LinkedList<HandPanel> handPanels = new LinkedList<HandPanel>();
 	
 	public PlayerPanel(Player player) {
 		this.player = player;
-		this.name = new JLabel(player.GetName());
-		this.name.setAlignmentX(CENTER_ALIGNMENT);
-		this.name.setForeground(GraphicsSettings.TEXT_COLOR);
+		name = new JLabel(player.GetName());
+		name.setAlignmentX(CENTER_ALIGNMENT);
+		name.setForeground(GraphicsSettings.TEXT_COLOR);
 		
-		handsPanel = new JPanel();
-		handsPanel.setLayout(new FlowLayout());
-		handsPanel.setOpaque(false);
+		handContainer = new JPanel();
+		handContainer.setLayout(new FlowLayout());
+		handContainer.setOpaque(false);
 		
 		betDisplay = new BetDisplay(player.GetTotalBet());
 		
-		add(handsPanel);
-		add(this.name);
+		add(handContainer);
+		add(name);
 		add(betDisplay);
 		for (int i = 0; i < player.GetNumberOfHands(); ++i) {
 			addHand(player.GetHand(i));
@@ -42,23 +44,29 @@ public class PlayerPanel extends JPanel {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 	}
 	
+	public void displayResultAs(int hand, HandState handState) {
+		if (hand < 0 || hand >= handPanels.size()) {
+			throw new IllegalArgumentException("Attempted to display result on a non-existent hand (%d).".formatted(hand));
+		}
+		
+		HandPanel panel = handPanels.get(hand);
+		panel.displayResult(handState);
+	}
+	
 	public void addHand(Hand hand) {
 		HandPanel handPanel = new HandPanel(hand);
-		handsPanel.add(handPanel);
+		handContainer.add(handPanel);
+		handPanels.add(handPanel);
 		revalidate();
 	}
 	
 	public void highlight(int hand) {
-		if (hand < 0 || hand > handsPanel.getComponentCount()) {
-			throw new IllegalArgumentException("Attempt to highlight a non-existent hand panel.");
+		if (hand < 0 || hand > handPanels.size()) {
+			throw new IllegalArgumentException("Attempt to highlight a non-existent hand panel (%d).".formatted(hand));
 		}
 
-		for (int i = 0; i < handsPanel.getComponentCount(); ++i) {
-			if (!(handsPanel.getComponent(i) instanceof HandPanel)) {
-				continue;
-			}
-			
-			HandPanel handPanel = (HandPanel) handsPanel.getComponent(i);
+		for (int i = 0; i < handPanels.size(); ++i) {
+			HandPanel handPanel = handPanels.get(i);
 			if (i == hand) {
 				handPanel.highlight();
 			} else {
@@ -70,15 +78,8 @@ public class PlayerPanel extends JPanel {
 	}
 	
 	public void removeHighlight() {
-		for (Component panel : handsPanel.getComponents()) {
-			if (!(panel instanceof HandPanel)) {
-				continue;
-			}
-			
-			HandPanel handPanel = (HandPanel) panel;
-			if (handPanel != null) {
-				handPanel.removeHighlight();
-			}
+		for (HandPanel handPanel : handPanels) {
+			handPanel.removeHighlight();
 		}
 		
 		name.setForeground(GraphicsSettings.TEXT_COLOR);
@@ -86,7 +87,7 @@ public class PlayerPanel extends JPanel {
 	
 	public void addCardToHand(Card card, int hand) {
 		if (hand >= 0 && hand < player.GetNumberOfHands()) {
-			HandPanel panel = (HandPanel)handsPanel.getComponent(hand);
+			HandPanel panel = (HandPanel)handContainer.getComponent(hand);
 			panel.addCard(card);
 		}
 	}

@@ -7,11 +7,7 @@ public class Deck {
 	protected LinkedList<Card> cards = new LinkedList<Card>();
 	
 	public Deck() {
-		for (Suit suit : Suit.values()) {
-			for (Rank rank : Rank.values()) {
-				cards.add(new Card(rank, suit));
-			}
-		}
+		Refill();
 	}
 	
 	public LinkedList<Card> GetCards() {
@@ -20,12 +16,13 @@ public class Deck {
 	
 	public Card PickRandomCard(Random rng) {
 		if (cards.size() <= 0) {
-			throw new RuntimeException( "Tried to pick a random card from an empty deck. " +
-									    "Use the method 'NumberOfRemainingCards' before picking cards.");
+			Refill();
 		}
 		
 		int chosenCard = rng.nextInt(cards.size());
-		return cards.remove(chosenCard);
+		Card pickedCard = cards.remove(chosenCard);
+		
+		return pickedCard;
 	}
 	
 	public Card PickRandomCard() {
@@ -39,5 +36,13 @@ public class Deck {
 	
 	public static int MaximumSize() {
 		return Rank.values().length * Suit.values().length;
+	}
+	
+	private void Refill() {
+		for (Suit suit : Suit.values()) {
+			for (Rank rank : Rank.values()) {
+				cards.add(new Card(rank, suit));
+			}
+		}		
 	}
 }

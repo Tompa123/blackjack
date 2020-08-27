@@ -20,6 +20,7 @@ public class Player {
 	
 	public Player(Player otherPlayer) {
 		this(otherPlayer.name, otherPlayer.balance);
+		initialBet = otherPlayer.initialBet;
 		for (PlayerHand hand : otherPlayer.hands) {
 			hands.add(new PlayerHand(hand));
 		}

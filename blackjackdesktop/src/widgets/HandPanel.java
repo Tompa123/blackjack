@@ -49,6 +49,11 @@ public class HandPanel extends JPanel {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 	}
 	
+	public void displayResult(HandState handState) {
+		String resultText = "%s (%s)".formatted(handState.toString(), getScoreAsString());
+		handValue.setText(resultText);
+	}
+	
 	public void addCard(Card card) {
 		CardPanel cardImage = new CardPanel(card);
 		cardImage.setBounds(0, cardContainer.getComponentCount() * 20, cardWidth, 200);
@@ -70,19 +75,23 @@ public class HandPanel extends JPanel {
 		cardContainer.removeAll();
 	}
 	
+	private String getScoreAsString() {
+		boolean hasSoftValue = (hand.SoftValue() != hand.HardValue() && hand.SoftValue() <= Hand.BLACK_JACK_LIMIT);
+		return hasSoftValue ? "%d/%d".formatted(hand.HardValue(), hand.SoftValue()) : Integer.toString(hand.HardValue());
+	}
+	
 	private void displayHandValue() {
 		textColor = GraphicsSettings.TEXT_COLOR;
 		handValue.setForeground(textColor);
+		
 		if (hand.IsBusted()) {
 			handValue.setText("BUST (%d)".formatted(hand.HardValue()));
-			handValue.setForeground(GraphicsSettings.BUST_COLOR);
-			textColor = GraphicsSettings.BUST_COLOR;
+			handValue.setForeground(GraphicsSettings.LOSS_COLOR);
+			textColor = GraphicsSettings.LOSS_COLOR;
 		} else if (hand.IsBlackJack()) {
 			handValue.setText("BLACKJACK");
-		} else if (hand.HardValue() != hand.SoftValue() && hand.SoftValue() <= Hand.BLACK_JACK_LIMIT) {
-			handValue.setText("%d/%d".formatted(hand.HardValue(), hand.SoftValue()));
 		} else {
-			handValue.setText(Integer.toString(hand.HardValue()));
+			handValue.setText(getScoreAsString());
 		}
 	}
 }

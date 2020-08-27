@@ -7,6 +7,8 @@ import java.awt.GridLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import blackjack.domain.Game;
+import blackjack.domain.HandState;
 import blackjack.domain.Player;
 
 public class PlayerSlotsPanel extends JPanel {
@@ -32,6 +34,21 @@ public class PlayerSlotsPanel extends JPanel {
 		
 		setOpaque(false);
 		setLayout(mainLayout);
+	}
+	
+	public void displayResults(Game game) {
+		for (int slot = 0; slot < Game.MAX_SLOTS; ++slot) {
+			if (!game.IsSlotVacant(slot)) {
+				Player player = game.GetPlayerAtSlot(slot);
+				for (int hand = 0; hand < player.GetNumberOfHands(); ++hand) {
+					HandState result = game.GetHandState(slot, hand);
+					PlayerPanel panel = playerPanels[slot];
+					if (panel != null) {
+						panel.displayResultAs(hand, result);
+					}
+				}
+			}
+		}
 	}
 	
 	public void displayPlayer(Player player, int slot) {
@@ -79,6 +96,15 @@ public class PlayerSlotsPanel extends JPanel {
 		
 		highlightedSlot = slot;
 		highlightedHand = hand;
+	}
+	
+	public void removeHighlight() {
+		for (JPanel panel : slotPanels) {
+			if (panel.getComponent(0) instanceof PlayerPanel) {
+				PlayerPanel player = (PlayerPanel) panel.getComponent(0);
+				player.removeHighlight();
+			}
+		}
 	}
 	
 	private void displaySlotAsVacant(int slot) {

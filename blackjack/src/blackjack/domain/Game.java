@@ -103,10 +103,10 @@ public class Game {
 		
 		if (playerHand.IsBusted()) {
 			return HandState.Bust;
+		} else if (playerHand.DistanceToBlackJack() < dealer.DistanceToBlackJack() || dealer.IsBusted()) {
+			return HandState.Win;
 		} else if (playerHand.DistanceToBlackJack() > dealer.DistanceToBlackJack()) {
 			return HandState.Loss;
-		} else if (playerHand.DistanceToBlackJack() < dealer.DistanceToBlackJack()) {
-			return HandState.Win;
 		} else {
 			return HandState.Push;
 		}
@@ -207,6 +207,16 @@ public class Game {
 		
 		int vacantSlot = GetFirstVacantSlot();
 		AddPlayerToSlot(player, vacantSlot);
+	}
+	
+	public void PlaceInitialBet(int slot, int bet) {
+		if (slot < 0 || slot >= players.length || players[slot] == null) {
+			throw new PlayerDoesNotExistException("Attempted to place an initial bet for a non-existent player at slot %d.".formatted(slot));
+		}
+		
+		Player player = players[slot];
+		player.PlaceInitialBet(bet);
+		playerStateUpdatedEvent.Fire(player, slot);
 	}
 	
 	public Player GetPlayerAtSlot(int slot) {

@@ -497,6 +497,23 @@ class GameTest {
 		assertEquals(1, game.GetDealerHand().GetNumberOfCards());
 	}
 	
+	@Test
+	void PlaceAnInitialBetForAPlayer() {
+		Player player = new Player("John Doe", 2000);
+		
+		game.AddPlayerToSlot(player, 2);
+		game.PlaceInitialBet(2, 1337);
+		
+		Player playerAfter = game.GetPlayerAtSlot(2);
+		assertEquals(1337, playerAfter.GetInitialBet());
+	}
+	
+	@Test
+	void NotAllowedToPlaceBetOnSlotsWithNoPlayer() {
+		assertThrows(PlayerDoesNotExistException.class, () -> game.PlaceInitialBet(0, 100)); // All slots are vacant from the start.
+		assertThrows(PlayerDoesNotExistException.class, () -> game.PlaceInitialBet(-1, 100));
+	}
+	
 	private PlayerHand CreateHandWithHardValue21() {
 		PlayerHand hand = new PlayerHand(0);
 		hand.AddCard(new Card(Rank.Ten, Suit.Clubs));
